@@ -1,3 +1,23 @@
+"""
+Important Bit Concepts:
+1. Create a mask at position
+    - First take bit 1 ie. 00000001.
+    - Then, left shift by desired Position. eg (1 << 2) = 00000100
+    - Mask is created at position 2.
+    ** Masks can be used to set, clear toggle and get bits at different positions **
+
+2. Set bit at position (Make it 1):
+    - given_number | Mask
+
+3. Toggle bit at position:
+    - given_number ^ Mask
+
+4. Clear bit at position (Make it 0):
+    - given_number & ~(Mask)
+    ** If Mask = 00000100 then ~(Mask) = 11111011 **
+
+"""
+
 """1. Count Bits"""
 
 
