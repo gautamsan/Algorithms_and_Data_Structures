@@ -69,5 +69,74 @@ def parity1(x):
         x &= x-1  # Drops lowest set bit
     return result
 
-print(parity1(int('00010111', 2)))
+# print(parity1(int('00010111', 2)))
+
+
+"""4. Parity improvement: Parity with cache"""
+
+# To compute parity of 64 bit words, we store parities of four 16-bit sub-words
+# Parity of whole word is found by computing parity of four sub-words
+
+# -------- Example for 2-bit words -----------
+precomputed_parity_2bit = [parity(i) for i in range(1 << 2)]
+
+# lookup table for 2-bit words
+print(precomputed_parity_2bit)  # [0, 1, 1, 0] => Parities of (0,0), (0,1), (1,0) and (1,1)
+print(len(precomputed_parity_2bit))  # 4 entries
+
+# To compute parity of 11001010 ie. sub-words: (11)(00)(10)(10),
+# We look in the table to find parity of (11) == 0, parity of (00) == 0, parity of (10) == 1, parity of (10) == 1
+# Parity of whole word is parity of 0,0,1,1 == 0
+
+# -------- End example for 2-bit words -----------
+
+# ************************ 64-bit word *****************************************
+precomputed_parity = [parity(i) for i in range(1 << 16)]
+print(len(precomputed_parity))  # 65,536 entries
+# print(bin(0xFFFF))
+
+
+def parity_cached(x):
+    mask_size = 16
+    # mask has 16 1's because we need to extract 16 bits at a time to use as index into the lookup table
+    bit_mask = int('0b1111111111111111', 2)
+    return (
+        # right-shift 48 bits to find parity of first 16 bits '1111111100001000'
+        precomputed_parity[x >> (3 * mask_size)] ^
+        # need to '&' because we are shifting only 32 bits and previously
+        # calculated 16-bits are still there. '&' sets those bits to 0
+        precomputed_parity[x >> (2 * mask_size) & bit_mask] ^
+        precomputed_parity[x >> mask_size & bit_mask] ^
+        precomputed_parity[x & bit_mask]
+        )
+
+# Finding index
+#
+# 1111111100001000 1111111100000100 1111111100000010 1111111100000001
+# - 1st operation:
+#   11111111100001000 => Rshift 48 gives Index for lookup table.
+#
+# - 2nd operation:
+#   #  1111111100001000 # 1111111100000100 => Rshift 32 [# dddd # means not needed]
+#   &  0000000000000000   1111111111111111
+#  ------------------------------------------
+#      0000000000000000   1111111100000100 => Index for lookup table. Not needed bits are erased
+
+# - 3rd operation:
+#   #  1111111100001000 1111111100000100 # 1111111100000010 => Rshift 16 [# dddd # means not needed]
+#   &  0000000000000000 0000000000000000   1111111111111111
+#  -----------------------------------------------------------
+#      0000000000000000 0000000000000000   1111111100000010 => Index for lookup table. Not needed bits are erased
+#
+# - 4th operation: Take whole thing
+#   #  1111111100001000 1111111100000100 1111111100000010 # 1111111100000001 [# dddd # means not needed]
+#   &  0000000000000000 0000000000000000 0000000000000000   1111111111111111
+#  ------------------------------------------------------------------------------------
+#      0000000000000000 0000000000000000 0000000000000000   1111111100000001 => Index. Not needed bits are erased
+#
+
+#
+
+print(parity_cached(int('0b1111111100001000111111110000010011111111000000101111111100000001', 2)))
+
 
