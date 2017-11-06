@@ -66,8 +66,9 @@ def parity1(x):
         # XOR with 1 because every loop erases lowest set bit
         # i.e, 1 is encountered on every loop
         result ^= 1  # 0 ^ 0 == 0, 1 ^ 1 == 0, else 1
-        x &= x-1  # Drops lowest set bit
+        x &= x - 1  # Drops lowest set bit
     return result
+
 
 # print(parity1(int('00010111', 2)))
 
@@ -93,6 +94,8 @@ print(len(precomputed_parity_2bit))  # 4 entries
 # ************************ 64-bit word *****************************************
 precomputed_parity = [parity(i) for i in range(1 << 16)]
 print(len(precomputed_parity))  # 65,536 entries
+
+
 # print(bin(0xFFFF))
 
 
@@ -108,7 +111,8 @@ def parity_cached(x):
         precomputed_parity[x >> (2 * mask_size) & bit_mask] ^
         precomputed_parity[x >> mask_size & bit_mask] ^
         precomputed_parity[x & bit_mask]
-        )
+    )
+
 
 # Finding index
 #
@@ -139,4 +143,27 @@ def parity_cached(x):
 
 print(parity_cached(int('0b1111111100001000111111110000010011111111000000101111111100000001', 2)))
 
+
+"""5. Parity improvement: O(logn) time"""
+
+
+def parity_optimized(x):
+    x ^= x >> 32  # Remove 32 R-most bits
+    x ^= x >> 16
+    x ^= x >> 8
+    x ^= x >> 4  # only last 4 bits are relevant
+    x ^= x >> 2  # only last 2 bits are relevant
+    x ^= x >> 1  # only the last bit is relevant
+    return x & 1  # Get only the last bit as it contains overall parity
+
+# ------------------------ NOTE: ----------------------------
+# x          1101 0111            same              1101
+# x >> 4     0000 1101           result             0111
+#           -----------                         XOR -----
+# x^(x>>4)== 1101 1010 'only 1010' is relevant      1010
+# -----------------------------------------------------------
+
+# print(parity_optimized(int('0b11010111', 2)))
+
+print(parity_optimized(int('0b1111111100001000111111110000010011111111000000101111111100000001', 2)))
 
